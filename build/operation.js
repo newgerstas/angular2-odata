@@ -1,96 +1,114 @@
 "use strict";
-const http_1 = require('@angular/http');
-const rx_1 = require('rxjs/rx');
-class ODataOperation {
-    constructor(_typeName, config, http) {
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var http_1 = require('@angular/http');
+var Observable_1 = require('rxjs/Observable');
+var ODataOperation = (function () {
+    function ODataOperation(_typeName, config, http) {
         this._typeName = _typeName;
         this.config = config;
         this.http = http;
     }
-    Expand(expand) {
+    ODataOperation.prototype.Expand = function (expand) {
         this._expand = this.parseStringOrStringArray(expand);
         return this;
-    }
-    Select(select) {
+    };
+    ODataOperation.prototype.Select = function (select) {
         this._select = this.parseStringOrStringArray(select);
         return this;
-    }
-    getParams() {
-        let params = new http_1.URLSearchParams();
+    };
+    ODataOperation.prototype.getParams = function () {
+        var params = new http_1.URLSearchParams();
         if (this._select && this._select.length > 0)
             params.set(this.config.keys.select, this._select);
         if (this._expand && this._expand.length > 0)
             params.set(this.config.keys.expand, this._expand);
         return params;
-    }
-    handleResponse(entity) {
+    };
+    ODataOperation.prototype.handleResponse = function (entity) {
+        var _this = this;
         return entity.map(this.extractData)
-            .catch((err, caught) => {
-            if (this.config.handleError)
-                this.config.handleError(err, caught);
-            return rx_1.Observable.throw(err);
+            .catch(function (err, caught) {
+            if (_this.config.handleError)
+                _this.config.handleError(err, caught);
+            return Observable_1.Observable.throw(err);
         });
-    }
-    getEntityUri(entityKey) {
+    };
+    ODataOperation.prototype.getEntityUri = function (entityKey) {
         return this.config.getEntityUri(entityKey, this._typeName);
-    }
-    getRequestOptions() {
-        let options = this.config.requestOptions;
+    };
+    ODataOperation.prototype.getRequestOptions = function () {
+        var options = this.config.requestOptions;
         options.search = this.getParams();
         return options;
-    }
-    parseStringOrStringArray(input) {
+    };
+    ODataOperation.prototype.parseStringOrStringArray = function (input) {
         if (input instanceof Array) {
             return input.join(',');
         }
         return input;
-    }
-    extractData(res) {
+    };
+    ODataOperation.prototype.extractData = function (res) {
         if (res.status < 200 || res.status >= 300) {
             throw new Error('Bad response status: ' + res.status);
         }
-        let body = res.json();
-        let entity = body;
+        var body = res.json();
+        var entity = body;
         return entity || null;
-    }
-}
+    };
+    return ODataOperation;
+}());
 exports.ODataOperation = ODataOperation;
-class OperationWithKey extends ODataOperation {
-    constructor(_typeName, config, http, key) {
-        super(_typeName, config, http);
+var OperationWithKey = (function (_super) {
+    __extends(OperationWithKey, _super);
+    function OperationWithKey(_typeName, config, http, key) {
+        _super.call(this, _typeName, config, http);
         this._typeName = _typeName;
         this.config = config;
         this.http = http;
         this.key = key;
     }
-}
+    return OperationWithKey;
+}(ODataOperation));
 exports.OperationWithKey = OperationWithKey;
-class OperationWithEntity extends ODataOperation {
-    constructor(_typeName, config, http, entity) {
-        super(_typeName, config, http);
+var OperationWithEntity = (function (_super) {
+    __extends(OperationWithEntity, _super);
+    function OperationWithEntity(_typeName, config, http, entity) {
+        _super.call(this, _typeName, config, http);
         this._typeName = _typeName;
         this.config = config;
         this.http = http;
         this.entity = entity;
     }
-}
+    return OperationWithEntity;
+}(ODataOperation));
 exports.OperationWithEntity = OperationWithEntity;
-class OperationWithKeyAndEntity extends ODataOperation {
-    constructor(_typeName, config, http, key, entity) {
-        super(_typeName, config, http);
+var OperationWithKeyAndEntity = (function (_super) {
+    __extends(OperationWithKeyAndEntity, _super);
+    function OperationWithKeyAndEntity(_typeName, config, http, key, entity) {
+        _super.call(this, _typeName, config, http);
         this._typeName = _typeName;
         this.config = config;
         this.http = http;
         this.key = key;
         this.entity = entity;
     }
-}
+    return OperationWithKeyAndEntity;
+}(ODataOperation));
 exports.OperationWithKeyAndEntity = OperationWithKeyAndEntity;
-class GetOperation extends OperationWithKey {
-    Exec() {
-        return super.handleResponse(this.http.get(this.getEntityUri(this.key), this.getRequestOptions()));
+var GetOperation = (function (_super) {
+    __extends(GetOperation, _super);
+    function GetOperation() {
+        _super.apply(this, arguments);
     }
-}
+    GetOperation.prototype.Exec = function () {
+        return _super.prototype.handleResponse.call(this, this.http.get(this.getEntityUri(this.key), this.getRequestOptions()));
+    };
+    return GetOperation;
+}(OperationWithKey));
 exports.GetOperation = GetOperation;
 // export class PostOperation<T> extends OperationWithEntity<T>{
 //     public Exec():Observable<T>{    //ToDo: Check ODataV4

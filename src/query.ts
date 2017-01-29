@@ -1,7 +1,9 @@
 import { URLSearchParams, Http, Response } from '@angular/http';
-import { Observable, Operator, Subject } from 'rxjs/rx';
+import { Observable } from 'rxjs/Observable';
 import { ODataConfiguration } from './config';
 import { ODataOperation } from './operation';
+import "rxjs/add/operator/map";
+import "rxjs/add/operator/catch";
 
 export class PagedResult<T>{
     public data: T[];

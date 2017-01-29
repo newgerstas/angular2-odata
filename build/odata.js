@@ -1,65 +1,71 @@
 "use strict";
-const rx_1 = require('rxjs/rx');
-const query_1 = require('./query');
-const operation_1 = require('./operation');
-class ODataService {
-    constructor(_typeName, http, config) {
+var Observable_1 = require('rxjs/Observable');
+var query_1 = require('./query');
+var operation_1 = require('./operation');
+var ODataService = (function () {
+    function ODataService(_typeName, http, config) {
         this._typeName = _typeName;
         this.http = http;
         this.config = config;
     }
-    get TypeName() {
-        return this._typeName;
-    }
-    Get(key) {
+    Object.defineProperty(ODataService.prototype, "TypeName", {
+        get: function () {
+            return this._typeName;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ODataService.prototype.Get = function (key) {
         return new operation_1.GetOperation(this._typeName, this.config, this.http, key);
-    }
-    Post(entity) {
-        let body = JSON.stringify(entity);
+    };
+    ODataService.prototype.Post = function (entity) {
+        var body = JSON.stringify(entity);
         return this.handleResponse(this.http.post(this.config.baseUrl + '/' + this.TypeName, body, this.config.postRequestOptions));
-    }
-    CustomAction(key, actionName, postdata) {
-        let body = JSON.stringify(postdata);
-        return this.http.post(this.getEntityUri(key) + '/' + actionName, body, this.config.requestOptions).map(resp => resp.json());
-    }
-    CustomFunction(key, actionName) {
-        return this.http.get(this.getEntityUri(key) + '/' + actionName, this.config.requestOptions).map(resp => resp.json());
-    }
-    Patch(entity, key) {
-        let body = JSON.stringify(entity);
+    };
+    ODataService.prototype.CustomAction = function (key, actionName, postdata) {
+        var body = JSON.stringify(postdata);
+        return this.http.post(this.getEntityUri(key) + '/' + actionName, body, this.config.requestOptions).map(function (resp) { return resp.json(); });
+    };
+    ODataService.prototype.CustomFunction = function (key, actionName) {
+        return this.http.get(this.getEntityUri(key) + '/' + actionName, this.config.requestOptions).map(function (resp) { return resp.json(); });
+    };
+    ODataService.prototype.Patch = function (entity, key) {
+        var body = JSON.stringify(entity);
         return this.http.patch(this.getEntityUri(key), body, this.config.postRequestOptions);
-    }
-    Put(entity, key) {
-        let body = JSON.stringify(entity);
+    };
+    ODataService.prototype.Put = function (entity, key) {
+        var body = JSON.stringify(entity);
         return this.handleResponse(this.http.put(this.getEntityUri(key), body, this.config.postRequestOptions));
-    }
-    Delete(key) {
+    };
+    ODataService.prototype.Delete = function (key) {
         return this.http.delete(this.getEntityUri(key), this.config.requestOptions);
-    }
-    Query() {
+    };
+    ODataService.prototype.Query = function () {
         return new query_1.ODataQuery(this.TypeName, this.config, this.http);
-    }
-    getEntityUri(entityKey) {
+    };
+    ODataService.prototype.getEntityUri = function (entityKey) {
         return this.config.getEntityUri(entityKey, this._typeName);
-    }
-    handleResponse(entity) {
+    };
+    ODataService.prototype.handleResponse = function (entity) {
+        var _this = this;
         return entity.map(this.extractData)
-            .catch((err, caught) => {
-            if (this.config.handleError)
-                this.config.handleError(err, caught);
-            return rx_1.Observable.throw(err);
+            .catch(function (err, caught) {
+            if (_this.config.handleError)
+                _this.config.handleError(err, caught);
+            return Observable_1.Observable.throw(err);
         });
-    }
-    extractData(res) {
+    };
+    ODataService.prototype.extractData = function (res) {
         if (res.status < 200 || res.status >= 300) {
             throw new Error('Bad response status: ' + res.status);
         }
-        let body = res.json();
-        let entity = body;
+        var body = res.json();
+        var entity = body;
         return entity || null;
-    }
-    escapeKey() {
-    }
-}
+    };
+    ODataService.prototype.escapeKey = function () {
+    };
+    return ODataService;
+}());
 exports.ODataService = ODataService;
 //# sourceMappingURL=odata.js.map
